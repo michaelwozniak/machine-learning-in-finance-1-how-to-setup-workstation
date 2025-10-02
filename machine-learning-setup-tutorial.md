@@ -295,6 +295,201 @@ GitHub is a web-based platform that hosts Git repositories and provides collabor
    # Password: paste-your-personal-access-token
    ```
 
+#### Option 2: Command Line Setup (Advanced)
+
+For users who prefer command-line setup or need to automate the process:
+
+**Step 1: Generate Personal Access Token via Command Line**
+
+```bash
+# Install GitHub CLI (if not already installed)
+# macOS
+brew install gh
+
+# Windows (using winget)
+winget install GitHub.cli
+
+# Linux
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh
+```
+
+**Step 2: Authenticate with GitHub CLI**
+
+```bash
+# Login to GitHub
+gh auth login
+
+# Follow the prompts:
+# 1. Choose "GitHub.com"
+# 2. Choose "HTTPS" as protocol
+# 3. Choose "Yes" to authenticate Git with GitHub credentials
+# 4. Choose "Login with a web browser"
+# 5. Copy the one-time code and press Enter
+# 6. Complete authentication in your browser
+```
+
+**Step 3: Configure Git Credentials**
+
+```bash
+# Set up credential helper for HTTPS
+git config --global credential.helper store
+
+# Set up credential helper for macOS Keychain (macOS only)
+git config --global credential.helper osxkeychain
+
+# Set up credential helper for Windows Credential Manager (Windows only)
+git config --global credential.helper manager-core
+
+# Verify configuration
+git config --list | grep credential
+```
+
+**Step 4: Test Authentication**
+
+```bash
+# Test with a simple Git operation
+git ls-remote https://github.com/octocat/Hello-World.git
+
+# Or clone a test repository
+git clone https://github.com/octocat/Hello-World.git
+cd Hello-World
+git remote -v
+cd ..
+rm -rf Hello-World
+```
+
+**Step 5: Set Up SSH Authentication (Alternative)**
+
+If you prefer SSH over HTTPS:
+
+```bash
+# Generate SSH key
+ssh-keygen -t ed25519 -C "your.email@example.com"
+
+# Start SSH agent
+eval "$(ssh-agent -s)"
+
+# Add SSH key to agent
+ssh-add ~/.ssh/id_ed25519
+
+# Copy public key to clipboard
+# macOS
+pbcopy < ~/.ssh/id_ed25519.pub
+
+# Windows (Git Bash)
+clip < ~/.ssh/id_ed25519.pub
+
+# Linux
+cat ~/.ssh/id_ed25519.pub
+```
+
+Then add the SSH key to your GitHub account:
+
+```bash
+# Add SSH key to GitHub via CLI
+gh ssh-key add ~/.ssh/id_ed25519.pub --title "My Development Machine"
+
+# Or manually:
+# 1. Go to GitHub → Settings → SSH and GPG keys
+# 2. Click "New SSH key"
+# 3. Paste your public key
+# 4. Give it a descriptive title
+```
+
+**Step 6: Configure Git to Use SSH**
+
+```bash
+# Change remote URL to SSH
+git remote set-url origin git@github.com:username/repository.git
+
+# Or clone using SSH
+git clone git@github.com:username/repository.git
+
+# Test SSH connection
+ssh -T git@github.com
+```
+
+**Step 7: Advanced Credential Management**
+
+For multiple GitHub accounts or advanced scenarios:
+
+```bash
+# Create SSH config file
+cat > ~/.ssh/config << 'EOF'
+# Personal GitHub account
+Host github.com-personal
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_personal
+
+# Work GitHub account
+Host github.com-work
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519_work
+EOF
+
+# Use different hosts for different repositories
+git clone git@github.com-personal:username/personal-repo.git
+git clone git@github.com-work:company/work-repo.git
+```
+
+**Step 8: Environment Variables for Automation**
+
+For CI/CD or automated scripts:
+
+```bash
+# Set environment variables (add to ~/.bashrc or ~/.zshrc)
+export GITHUB_TOKEN="your_personal_access_token"
+export GITHUB_USERNAME="your_username"
+
+# Use in scripts
+git clone https://$GITHUB_USERNAME:$GITHUB_TOKEN@github.com/username/repo.git
+
+# Or use GitHub CLI
+gh auth token
+gh api user
+```
+
+**Step 9: Verify Complete Setup**
+
+```bash
+# Check Git configuration
+git config --list
+
+# Check GitHub CLI authentication
+gh auth status
+
+# Test Git operations
+git ls-remote https://github.com/octocat/Hello-World.git
+
+# Test GitHub CLI operations
+gh repo list
+gh issue list
+```
+
+**Troubleshooting Command Line Setup:**
+
+```bash
+# Clear stored credentials
+git config --global --unset credential.helper
+rm ~/.git-credentials
+
+# Re-authenticate
+gh auth logout
+gh auth login
+
+# Check SSH connection
+ssh -vT git@github.com
+
+# Reset GitHub CLI
+gh auth logout
+gh auth login --web
+```
+
 
 ### Creating Your First Repository
 
